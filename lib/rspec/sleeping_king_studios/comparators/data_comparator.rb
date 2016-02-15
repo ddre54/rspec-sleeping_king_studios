@@ -20,7 +20,8 @@ module RSpec::SleepingKingStudios::Comparators
     # (see RSpec::SleepingKingStudios::Comparators::Comparator#compare)
     def compare u, v, options = {}
       options_with_defaults = {
-        :ordered => true
+        :indifferent_access => false,
+        :ordered            => true
       }.merge options
 
       super u, v, options_with_defaults
@@ -41,20 +42,41 @@ module RSpec::SleepingKingStudios::Comparators
 
     # @api private
     def compare_hash_keys u, v, options
-      u.keys == v.keys
+      if options[:indifferent_access]
+        u.keys.map(&:to_s) == v.keys.map(&:to_s)
+      else
+        u.keys == v.keys
+      end # if-else
     end # method compare_hash_keys
 
     # @api private
-    def compare_hashes u, v, options
-      return false unless compare_hash_keys u, v, options
-
+    def compare_hash_values u, v, options
       u.each do |key, value|
-        other = v[key]
+        if options[:indifferent_access]
+          other = if v.key?(key)
+            v[key]
+          elsif v.key?(key.to_s)
+            v[key.to_s]
+          elsif v.key?(key.intern)
+            v[key.intern]
+          else
+            matching_key = v.keys.find { |obj| obj.to_s == key.to_s }
 
-        return false unless compare(value, other, options)
+            v[matching_key]
+          end # if-else
+        else
+          other = v[key]
+        end # if-else
+
+        return false unless run_comparison(value, other, options)
       end # each
 
       true
+    end # method compare_hash_values
+
+    # @api private
+    def compare_hashes u, v, options
+      compare_hash_keys(u, v, options) && compare_hash_values(u, v, options)
     end # method compare_hashes
 
     # @api private
@@ -62,7 +84,7 @@ module RSpec::SleepingKingStudios::Comparators
       u.each.with_index do |value, index|
         other = v[index]
 
-        return false unless compare(value, other, options)
+        return false unless run_comparison(value, other, options)
       end # each
 
       true
@@ -80,7 +102,7 @@ module RSpec::SleepingKingStudios::Comparators
         (second.count - 1).downto(0) do |index|
           second_item = second[index]
 
-          if matched = compare(first_item, second_item, options)
+          if matched = run_comparison(first_item, second_item, options)
             # Splice second_item from array.
             second[index..index] = []
 

@@ -122,6 +122,28 @@ RSpec.describe RSpec::SleepingKingStudios::Comparators::DataComparator do
         end # describe
       end # describe
 
+      describe 'with mixed string and symbol keys' do
+        let(:first) { canonical }
+        let(:second) do
+          copy.tap do |hsh|
+            hsh['posts'] = hsh.delete(:posts)
+            hsh['posts'].each do |post|
+              post.keys.each do |key|
+                post[key.to_s] = post.delete(key)
+              end # each
+            end # each
+          end # tap
+        end # let
+
+        it { expect(instance.compare first, second).to be false }
+
+        describe 'with :indifferent_access => true' do
+          it { expect(instance.compare first, second, :indifferent_access => true).to be true }
+
+          it { expect(instance.compare second, first, :indifferent_access => true).to be true }
+        end # describe
+      end # describe
+
       describe 'with unordered posts' do
         let(:first) { canonical }
         let(:second) do
@@ -178,6 +200,12 @@ RSpec.describe RSpec::SleepingKingStudios::Comparators::DataComparator do
           let(:second) { { 'foo' => 'foo', 'bar' => 'bar', 'baz' => 'baz' } }
 
           it { expect(instance.compare first, second).to be false }
+
+          describe 'with :indifferent_access => true' do
+            it { expect(instance.compare first, second, :indifferent_access => true).to be true }
+
+            it { expect(instance.compare second, first, :indifferent_access => true).to be true }
+          end # describe
         end # describe
       end # describe
 

@@ -99,11 +99,31 @@ Evaluates a comparison between two objects. Takes 1..2 objects and an optional o
 
 RSpec::SleepingKingStudios includes a sample comparator, suitable for comparing JSON-like data structures. Out of the box, a DataComparator can compare a range of value objects, including nils, booleans, integers, floats, strings, and symbols. It also has support for performing deep comparisons of arrays and hashes, with several additional options.
 
+#### `:indifferent_access` Option
+
+The `:indifferent_access` option determines whether hash keys with the same value but different classes are considered the same key. If `:indifferent_access` is set to true, then hash keys are converted to their string equivalent prior to comparison. This can be particularly useful for comparing values that may variably have string or symbol keys, depending on the library or process used.
+
+    # String and Symbol Equivalence
+    first  = { :foo  => 'foo' }
+    second = { 'foo' => 'foo' }
+    compare(first, second) #=> false
+    compare(first, second, :indifferent_access => true) #=> true
+
+    # Integer and String Equivalence
+    first  = { 1   => 'one', 2   => 'two', 3   => 'three' }
+    second = { '1' => 'one', '2' => 'two', '3' => 'three' }
+    compare(first, second) #=> false
+    compare(first, second, :indifferent_access => true) #=> true
+
+The default value for `:indifferent_access` is false.
+
 #### `:ordered` Option
 
 The `:ordered` option determines whether or not array comparisons are ordered. Ordered comparisons will compare the arrays like lists - the number of items must be the same, and the items at each index must match (using `#compare`, so both value objects and nested arrays and hashes are compared correctly). Unordered comparisons will compare the arrays like multisets or bags, so the number of items must be the same, and there must be a mapping between the arrays such that each item in the array matches an item in the other array, with each item being matched to exactly one other item.
 
 Unordered comparisons can result in inconsistent behavior if the comparisons are not carefully defined. In particular, comparisons **must** be equivalence relations, meaning they must be reflexive (x == x), symmetric (x == y if and only if y == x), and transitive (x == y and y == z if and only if x == z).
+
+The default value for `:ordered` is true.
 
 ## Concerns
 

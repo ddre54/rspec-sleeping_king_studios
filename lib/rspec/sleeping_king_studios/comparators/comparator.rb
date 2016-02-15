@@ -181,6 +181,18 @@ module RSpec::SleepingKingStudios::Comparators
     #
     # @see Comparator.compare
     def compare u, v, options = {}
+      run_comparison u, v, options
+    end # method compare
+
+    private
+
+    # @api private
+    def comparison_for u, v
+      self.class.send :comparison_for, u, v
+    end # method comparison_for
+
+    # @api private
+    def run_comparison u, v, options
       comparison, reversed = comparison_for(u, v)
 
       u, v = v, u if reversed
@@ -193,13 +205,6 @@ module RSpec::SleepingKingStudios::Comparators
       else
         raise RSpec::SleepingKingStudios::Comparators::UnimplementedComparisonError.new(u, v)
       end # unless
-    end # method compare
-
-    private
-
-    # @api private
-    def comparison_for u, v
-      self.class.send :comparison_for, u, v
-    end # method comparison_for
+    end # method run_comparison
   end # class
 end # module
