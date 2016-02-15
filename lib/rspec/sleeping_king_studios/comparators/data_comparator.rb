@@ -1,8 +1,8 @@
-# lib/rspec/sleeping_king_studios/concerns/comparable/data_comparator.rb
+# lib/rspec/sleeping_king_studios/comparators/data_comparator.rb
 
-require 'rspec/sleeping_king_studios/concerns/comparable/comparator'
+require 'rspec/sleeping_king_studios/comparators/comparator'
 
-module RSpec::SleepingKingStudios::Concerns::Comparable
+module RSpec::SleepingKingStudios::Comparators
   # Class for comparing recursive data structures.
   class DataComparator < Comparator
     compare Object do |*| false; end
@@ -17,6 +17,7 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
 
     compare Hash, :compare_hashes
 
+    # (see RSpec::SleepingKingStudios::Comparators::Comparator#compare)
     def compare u, v, options = {}
       options_with_defaults = {
         :ordered => true
@@ -27,6 +28,7 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
 
     private
 
+    # @api private
     def compare_arrays u, v, options
       return false unless u.count == v.count
 
@@ -37,10 +39,12 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
       end # if-else
     end # method compare_arrays
 
+    # @api private
     def compare_hash_keys u, v, options
       u.keys == v.keys
     end # method compare_hash_keys
 
+    # @api private
     def compare_hashes u, v, options
       return false unless compare_hash_keys u, v, options
 
@@ -53,6 +57,7 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
       true
     end # method compare_hashes
 
+    # @api private
     def compare_lists u, v, options
       u.each.with_index do |value, index|
         other = v[index]
@@ -63,6 +68,7 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
       true
     end # method compare_lists
 
+    # @api private
     def compare_sets u, v, options
       first, second = u.dup, v.dup
 

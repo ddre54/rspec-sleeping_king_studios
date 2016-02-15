@@ -2,6 +2,10 @@
 
 ## 2.2.0
 
+### Comparators
+
+Implemented the Comparator, a general-case solution for building objects that perform comparisons on custom objects. Includes a sample DataComparator, suitable for comparing JSON-like data objects with optional ordering constraints.
+
 ### Matchers
 
 Internally refactored all matcher definitions to *_matcher.rb, while the previous *.rb files define the macros which are added to example groups. The file names now accurately reflect what they define. In addition, the matchers can be required separately from the macros, e.g. to get around a naming conflict with another library. Also added support for aliasing matchers.

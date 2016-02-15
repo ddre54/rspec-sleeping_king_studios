@@ -1,8 +1,8 @@
-# lib/rspec/sleeping_king_studios/concerns/comparable/comparator.rb
+# lib/rspec/sleeping_king_studios/comparators/comparator.rb
 
-require 'rspec/sleeping_king_studios/concerns/comparable'
+require 'rspec/sleeping_king_studios/comparators'
 
-module RSpec::SleepingKingStudios::Concerns::Comparable
+module RSpec::SleepingKingStudios::Comparators
   # Base class for defining custom comparators.
   class Comparator
     class << self
@@ -131,7 +131,7 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
           end # if-elsif
         end # each
 
-        superclass.comparison_for(u, v) if superclass < RSpec::SleepingKingStudios::Concerns::Comparable::Comparator
+        superclass.comparison_for(u, v) if superclass < RSpec::SleepingKingStudios::Comparators::Comparator
       end # method comparison_for
 
       private
@@ -176,7 +176,7 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
     #
     # @return The return value of the comparison.
     #
-    # @raise [RSpec::SleepingKingStudios::Concerns::Comparable::UnimplementedComparisonError]
+    # @raise [RSpec::SleepingKingStudios::Comparators::UnimplementedComparisonError]
     #   If no comparison is found for objects u and v.
     #
     # @see Comparator.compare
@@ -191,7 +191,7 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
       when Proc
         comparison.call u, v, options
       else
-        raise RSpec::SleepingKingStudios::Concerns::Comparable::UnimplementedComparisonError.new(u, v)
+        raise RSpec::SleepingKingStudios::Comparators::UnimplementedComparisonError.new(u, v)
       end # unless
     end # method compare
 

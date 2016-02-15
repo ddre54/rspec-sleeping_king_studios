@@ -4,13 +4,14 @@ A collection of matchers and extensions to ease TDD/BDD using RSpec. Extends bui
 
 ## Support
 
-RSpec::SleepingKingStudios is tested against RSpec 3.0, 3.1, 3.2, and 3.3.
+RSpec::SleepingKingStudios is tested against RSpec 3.0, 3.1, 3.2, 3.3, and 3.4.
 
 Currently, the following versions of Ruby are officially supported:
 
-* 2.0
-* 2.1
-* 2.2
+* 2.0.0
+* 2.1.8
+* 2.2.4
+* 2.3.0
 
 If you require a previous version of Ruby or RSpec, the 1.0 branch supports Ruby 1.9.3 and RSpec 2: `gem "rspec-sleeping_king_studios", "~> 1.0.1"`. However, changes from 2.0 and higher will not be backported.
 
@@ -59,6 +60,50 @@ This option is used with the RSpec matcher examples (see Examples, below), and d
     end # config
 
 This option is used with the HavePredicateMatcher (see `#have_predicate`, below). If set to true, ensures that any method that is expected to be a predicate will return either true or false. The matcher will fail if the method returns any other value. The default value is false, which allows for loose matching of predicate methods.
+
+## Comparators
+
+Determining the equality of objects can be challenging, especially for complex data structures or objects that require "fuzzy" matching, such as arrays where ordering may or may not be important. Custom solutions can be complex, brittle, and prone to inconsistency and DRY violations. RSpec::SleepingKingStudios offers a solution in the form of Comparators, a class and DSL for building reusable custom comparison objects.
+
+### The Comparator DSL
+
+    require 'rspec/sleeping_king_studios/comparators/comparator'
+
+    class StringLengthComparator < RSpec::SleepingKingStudios::Comparators::Comparator
+      compare String do |u, v, options|
+        u.length == v.length
+      end # compare
+    end # class
+
+    comparator = StringLengthComparator.new
+
+    comparator.compare("Hello", "World")
+    #=> true
+
+    comparator.compare("Greetings", "Starfighter")
+    #=> false
+
+#### `::compare`
+
+Defines a comparison using the provided type(s) and block. Takes 1..2 classes and an optional options hash as parameters. If two objects to be compared match the given type(s), the block will be yielded with the two objects.
+
+By default, if two types are provided (e.g. `compare String, Symbol`), then the comparison is order-agnostic, so both `compare('my string', :my_symbol) and `compare(:my_symbol, 'my_string') will match the comparison. The comparator will always yield the values to the block in the order of the types you specified. However, if you define the comparison with `:reversible => false`, then only values in the same order as the specified types will match the comparison.
+
+#### `#compare`
+
+Evaluates a comparison between two objects. Takes 1..2 objects and an optional options hash as parameters. The comparator will then search the comparisons defined on its class and superclass(es) (see `::compare`, above) until a comparison matching the two objects is found. If no comparison is found, raises a `RSpec::SleepingKingStudios::Comparators::UnimplementedComparisonError`. If a comparison is found, it is run with the two objects and the options hash provided.
+
+### DataComparator
+
+    require 'rspec/sleeping_king_studios/comparators/data_comparator'
+
+RSpec::SleepingKingStudios includes a sample comparator, suitable for comparing JSON-like data structures. Out of the box, a DataComparator can compare a range of value objects, including nils, booleans, integers, floats, strings, and symbols. It also has support for performing deep comparisons of arrays and hashes, with several additional options.
+
+#### `:ordered` Option
+
+The `:ordered` option determines whether or not array comparisons are ordered. Ordered comparisons will compare the arrays like lists - the number of items must be the same, and the items at each index must match (using `#compare`, so both value objects and nested arrays and hashes are compared correctly). Unordered comparisons will compare the arrays like multisets or bags, so the number of items must be the same, and there must be a mapping between the arrays such that each item in the array matches an item in the other array, with each item being matched to exactly one other item.
+
+Unordered comparisons can result in inconsistent behavior if the comparisons are not carefully defined. In particular, comparisons **must** be equivalence relations, meaning they must be reflexive (x == x), symmetric (x == y if and only if y == x), and transitive (x == y and y == z if and only if x == z).
 
 ## Concerns
 

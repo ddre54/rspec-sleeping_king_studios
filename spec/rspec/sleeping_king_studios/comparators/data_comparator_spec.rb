@@ -1,11 +1,11 @@
-# spec/rspec/sleeping_king_studios/concerns/comparable/data_comparator_spec.rb
+# spec/rspec/sleeping_king_studios/comparators/data_comparator_spec.rb
 
 require 'rspec/sleeping_king_studios/spec_helper'
 require 'rspec/sleeping_king_studios/matchers/built_in/respond_to'
 
-require 'rspec/sleeping_king_studios/concerns/comparable/data_comparator'
+require 'rspec/sleeping_king_studios/comparators/data_comparator'
 
-RSpec.describe RSpec::SleepingKingStudios::Concerns::Comparable::DataComparator do
+RSpec.describe RSpec::SleepingKingStudios::Comparators::DataComparator do
   let(:instance) { described_class.new }
 
   describe '#compare' do

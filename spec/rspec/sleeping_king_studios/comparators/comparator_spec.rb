@@ -1,11 +1,11 @@
-# spec/rspec/sleeping_king_studios/concerns/comparable/comparator_spec.rb
+# spec/rspec/sleeping_king_studios/comparators/comparator_spec.rb
 
 require 'rspec/sleeping_king_studios/spec_helper'
 require 'rspec/sleeping_king_studios/matchers/built_in/respond_to'
 
-require 'rspec/sleeping_king_studios/concerns/comparable/comparator'
+require 'rspec/sleeping_king_studios/comparators/comparator'
 
-RSpec.describe RSpec::SleepingKingStudios::Concerns::Comparable::Comparator do
+RSpec.describe RSpec::SleepingKingStudios::Comparators::Comparator do
   shared_context 'with a comparator subclass' do
     let(:described_class) { Class.new super() }
   end # shared_context
@@ -142,7 +142,7 @@ RSpec.describe RSpec::SleepingKingStudios::Concerns::Comparable::Comparator do
     it 'should raise an error' do
       expect {
         instance.compare nil, nil
-      }.to raise_error RSpec::SleepingKingStudios::Concerns::Comparable::UnimplementedComparisonError,
+      }.to raise_error RSpec::SleepingKingStudios::Comparators::UnimplementedComparisonError,
         'no comparison is defined to compare nil with nil'
     end # it
 
@@ -235,7 +235,7 @@ RSpec.describe RSpec::SleepingKingStudios::Concerns::Comparable::Comparator do
           it 'should raise an error' do
             expect {
               instance.compare :'abra kadabra', 'abc'
-            }.to raise_error RSpec::SleepingKingStudios::Concerns::Comparable::UnimplementedComparisonError,
+            }.to raise_error RSpec::SleepingKingStudios::Comparators::UnimplementedComparisonError,
               'no comparison is defined to compare :"abra kadabra" with "abc"'
           end # it
         end # describe
@@ -244,7 +244,7 @@ RSpec.describe RSpec::SleepingKingStudios::Concerns::Comparable::Comparator do
           it 'should raise an error' do
             expect {
               instance.compare :def, 'abc'
-            }.to raise_error RSpec::SleepingKingStudios::Concerns::Comparable::UnimplementedComparisonError,
+            }.to raise_error RSpec::SleepingKingStudios::Comparators::UnimplementedComparisonError,
               'no comparison is defined to compare :def with "abc"'
           end # it
         end # describe
