@@ -33,7 +33,7 @@ RSpec.describe RSpec::SleepingKingStudios::Concerns::Comparable::Comparator do
       describe 'with an object' do
         it 'should raise an error' do
           expect {
-            described_class.compare *types, { :foo => :bar }
+            described_class.compare *types, Object.new
           }.to raise_error ArgumentError, 'method name must be a string or symbol'
         end # it
       end # describe
@@ -196,8 +196,10 @@ RSpec.describe RSpec::SleepingKingStudios::Concerns::Comparable::Comparator do
     context 'with a defined comparison with two predicates' do
       include_context 'with a comparator subclass'
 
+      let(:options) { {} }
+
       before(:example) do
-        described_class.compare String, Symbol do |u, v, options|
+        described_class.compare String, Symbol, options do |u, v, options|
           u.length == v.length
         end # compare
       end # before
@@ -216,6 +218,36 @@ RSpec.describe RSpec::SleepingKingStudios::Concerns::Comparable::Comparator do
 
       describe 'with matching items in reverse order' do
         it { expect(instance.compare :def, 'abc').to be true }
+      end # describe
+
+      describe 'with :reversible => false' do
+        let(:options) { super().merge :reversible => false }
+
+        describe 'with non-matching items' do
+          it { expect(instance.compare 'abc', :'abra kadabra').to be false }
+        end # describe
+
+        describe 'with matching items' do
+          it { expect(instance.compare 'abc', :def).to be true }
+        end # describe
+
+        describe 'with non-matching items in reverse order' do
+          it 'should raise an error' do
+            expect {
+              instance.compare :'abra kadabra', 'abc'
+            }.to raise_error RSpec::SleepingKingStudios::Concerns::Comparable::UnimplementedComparisonError,
+              'no comparison is defined to compare :"abra kadabra" with "abc"'
+          end # it
+        end # describe
+
+        describe 'with matching items in reverse order' do
+          it 'should raise an error' do
+            expect {
+              instance.compare :def, 'abc'
+            }.to raise_error RSpec::SleepingKingStudios::Concerns::Comparable::UnimplementedComparisonError,
+              'no comparison is defined to compare :def with "abc"'
+          end # it
+        end # describe
       end # describe
     end # describe
   end # describe

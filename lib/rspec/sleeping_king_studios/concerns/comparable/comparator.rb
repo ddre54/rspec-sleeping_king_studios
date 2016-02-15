@@ -15,9 +15,10 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
       #
       # @see #compare
       #
-      # @overload compare(type, &block)
+      # @overload compare(type, options = {}, &block)
       #   @param type [Class] The object type to compare. Objects of this class
       #     or subclasses of this class will be compared using the block.
+      #   @param options [Hash] Additional options for the comparison.
       #
       #   @yield Defines the comparison.
       #   @yieldparam u The first compared object.
@@ -25,11 +26,18 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
       #   @yieldparam options [Hash] A hash of additional options.
       #   @yieldreturn The return value of the comparison.
       #
-      # @overload compare(first_type, second_type, &block)
+      # @overload compare(first_type, second_type, options = {}, &block)
       #   @param first_type [Class] The first object type to compare. One of the
       #     compared objects must be of this type, and the other object must be
-      #     of the second type regardless of order.
+      #     of the second type regardless of order unless the :reversible option
+      #     is set to false
       #   @param second_type [Class] The second object type to compare.
+      #   @param options [Hash] Additional options for the comparison.
+      #
+      #   @option options [Boolean] :reversible If true, the comparison will
+      #     match both [first_type, second_type] and [second_type, first_type].
+      #     Otherwise, only [first_type, second_type] will match. Defaults to
+      #     true.
       #
       #   @yield Defines the comparison.
       #   @yieldparam u The first compared object.
@@ -37,59 +45,77 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
       #   @yieldparam options [Hash] A hash of additional options.
       #   @yieldreturn The return value of the comparison.
       #
-      # @overload compare(type, method_name)
+      # @overload compare(type, method_name, options = {})
       #   @param type [Class] The object type to compare. Objects of this class
       #     or subclasses of this class will be compared using the specified
       #     method.
       #   @param method_name [String, Symbol] The name of the method to compare
       #     objects with.
+      #   @param options [Hash] Additional options for the comparison.
       #
       #   @raise [ArgumentError] If the method name is not a string or symbol,
       #     or if the method name is a string or symbol but is blank.
       #
-      # @overload compare(first_type, second_type, method_name)
+      # @overload compare(first_type, second_type, method_name, options = {})
       #   @param first_type [Class] The first object type to compare. One of the
       #     compared objects must be of this type, and the other object must be
-      #     of the second type regardless of order.
+      #     of the second type regardless of order unless the :reversible option
+      #     is set to false
       #   @param second_type [Class] The second object type to compare.
       #   @param method_name [String, Symbol] The name of the method to compare
       #     objects with.
+      #   @param options [Hash] Additional options for the comparison.
+      #
+      #   @option options [Boolean] :reversible If true, the comparison will
+      #     match both [first_type, second_type] and [second_type, first_type].
+      #     Otherwise, only [first_type, second_type] will match. Defaults to
+      #     true.
       #
       #   @raise [ArgumentError] If the method name is not a string or symbol,
       #     or if the method name is a string or symbol but is blank.
-      def compare first_type, second_type_or_method_name = nil, method_name = nil, &block
-        if method_name != nil
-          validate_method_name method_name
+      def compare *args, &block
+        if args.count > 4
+          raise ArgumentError, "wrong number of arguments (given #{args.count}, expected 4)"
+        end # if
 
-          second_type = second_type_or_method_name
-          comparison  = method_name
-        elsif second_type_or_method_name != nil
-          if valid_predicate?(second_type_or_method_name)
-            if block_given?
-              second_type = second_type_or_method_name
-              comparison  = block
-            else
-              raise ArgumentError, 'must provide a method name or block'
-            end # if-else
-          else
-            validate_method_name second_type_or_method_name
+        first_type = args.shift
+        options    = {
+          :reversible => true
+        } # end options
+        options.update(args.pop) if args.last.is_a?(Hash)
 
-            second_type = first_type
-            comparison  = second_type_or_method_name
-          end # if-else
-        else
-          if block_given?
-            second_type = first_type
+        case args.count
+        when 0
+          raise ArgumentError, 'must provide a method name or block' unless block_given?
+
+          second_type = first_type
+          comparison  = block
+        when 1
+          arg = args.first
+
+          if valid_predicate?(arg)
+            raise ArgumentError, 'must provide a method name or block' unless block_given?
+
+            second_type = arg
             comparison  = block
           else
-            raise ArgumentError, 'must provide a method name or block'
+            validate_method_name arg
+
+            second_type = first_type
+            comparison  = arg
           end # if-else
-        end # if-else
+        when 2
+          validate_method_name args.last
+
+          second_type = args.first
+          comparison  = args.last
+        end
 
         comparisons.unshift({
           :match_first  => build_predicate_matcher(first_type),
           :match_second => build_predicate_matcher(second_type),
-          :comparison   => comparison
+          :comparison   => comparison,
+          :options      => options
         }) # end object
       end # method compare
 
@@ -100,7 +126,7 @@ module RSpec::SleepingKingStudios::Concerns::Comparable
         comparisons.each do |hsh|
           if hsh[:match_first] === u && hsh[:match_second] === v
             return hsh[:comparison], false
-          elsif hsh[:match_first] === v && hsh[:match_second] === u
+          elsif hsh[:options][:reversible] && hsh[:match_first] === v && hsh[:match_second] === u
             return hsh[:comparison], true
           end # if-elsif
         end # each
